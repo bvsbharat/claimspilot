@@ -2,7 +2,9 @@
 
 **Intelligent Insurance Claims Automation Platform**
 
-ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform that automates the entire claims workflow from intake to routing. Built with cutting-edge AI technologies, it reduces triage time by 92% while improving routing accuracy to 95%.
+**Powered by [Landing AI](https://landing.ai) 🚀 & [Pathway](https://pathway.com) ⚡**
+
+ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform that automates the entire claims workflow from intake to routing. Built on **Landing AI's** advanced document intelligence and **Pathway's** real-time streaming architecture, it reduces triage time by 92% while improving routing accuracy to 95%.
 
 ## 🚀 Features
 
@@ -30,6 +32,8 @@ ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform tha
 
 ## 🏗️ Architecture
 
+**Built on Landing AI's Document Intelligence + Pathway's Real-Time Streaming**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    INPUT SOURCES                             │
@@ -37,8 +41,9 @@ ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform tha
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│              PATHWAY REAL-TIME PIPELINE                      │
-│  👀 File Watcher → 📄 Extract → 📊 Score → 🔍 Detect → 🎯   │
+│         ⚡ PATHWAY REAL-TIME PIPELINE (Pathway.com)          │
+│  👀 File Watcher → 🚀 Landing AI Extract → 📊 Score →       │
+│  🔍 Detect → 🎯 Route (All in Real-Time Streaming)          │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -55,10 +60,12 @@ ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform tha
 
 ## 🛠️ Tech Stack
 
+### Core Technologies (Powering the Entire Platform)
+- **🚀 Landing AI (ADE DPT-2)**: Enterprise-grade document intelligence - extracts structured data from insurance documents with industry-leading accuracy. Powers all document processing and data extraction.
+- **⚡ Pathway**: Real-time streaming data framework - provides instant file watching, processing pipeline, and live data transformations. Powers the entire claim automation workflow.
+
 ### Backend Services
 - **FastAPI**: High-performance async API framework
-- **Pathway**: Real-time streaming data processing and file watching
-- **LandingAI ADE (DPT-2)**: Advanced document intelligence and extraction
 - **OpenAI GPT-4o**: Fraud detection, claim parsing, routing decisions, and RAG
 
 ### Data Layer
@@ -349,16 +356,19 @@ claimspilot/
 
 ## 🔧 How It Works
 
-### 1. **Document Intake**
+### 1. **Document Intake** (Powered by Pathway)
 - **Upload**: Drop a claim document via web UI or API
 - **Gmail Auto-Fetch**: System automatically monitors Gmail inbox every 5 minutes for claim-related emails
-- **File Watching**: Pathway monitors the `uploads/` directory in real-time
+- **File Watching**: **Pathway's** streaming engine monitors the `uploads/` directory in real-time
+- **Instant Processing**: The moment a file arrives, Pathway triggers the entire automation pipeline
+- Pathway ensures zero-latency processing from document arrival to adjuster assignment
 
-### 2. **Extraction Phase** (LandingAI ADE)
-- Document is sent to LandingAI's DPT-2 model
-- Extracts structured data: claim amounts, dates, parties, injuries, descriptions
-- Handles ACORD forms, police reports, medical records, and emails
-- Text and tables extracted with high accuracy
+### 2. **Extraction Phase** (Powered by Landing AI)
+- Document is sent to **Landing AI's ADE (DPT-2)** - the industry-leading document intelligence platform
+- Extracts structured data with enterprise-grade accuracy: claim amounts, dates, parties, injuries, descriptions
+- Handles complex insurance documents: ACORD forms, police reports, medical records, and emails
+- Text and tables extracted with industry-leading precision
+- Landing AI powers all document understanding capabilities
 
 ### 3. **Analysis Phase**
 - **Scoring Engine**: Calculates severity (0-100) and complexity (0-100) scores based on:
@@ -568,13 +578,21 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 ## 🙏 Acknowledgments
 
-Built with these amazing technologies:
-- [LandingAI](https://landing.ai/) - Advanced document intelligence
-- [Pathway](https://pathway.com/) - Real-time data processing
-- [OpenAI](https://openai.com/) - GPT-4o language models
-- [Pinecone](https://www.pinecone.io/) - Vector database
+### Core Platform Technologies
+
+**ClaimsPilot.ai is proudly powered by:**
+
+- **🚀 [Landing AI](https://landing.ai/)** - The engine behind our document intelligence. Landing AI's ADE (Automated Document Extraction) with DPT-2 provides enterprise-grade accuracy for extracting structured data from complex insurance documents. Without Landing AI, this platform wouldn't be possible.
+
+- **⚡ [Pathway](https://pathway.com/)** - The real-time streaming framework that powers our entire automation workflow. Pathway's live data processing enables instant file watching, claim processing, and real-time updates that make our system blazingly fast.
+
+### Additional Technologies
+
+- [OpenAI](https://openai.com/) - GPT-4o language models for reasoning and fraud detection
+- [Pinecone](https://www.pinecone.io/) - Vector database for semantic search
 - [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
 - [LangChain](https://www.langchain.com/) - LLM application framework
+- [MongoDB](https://www.mongodb.com/) - Document database
 
 ## 📧 Support & Contact
 
