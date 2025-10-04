@@ -1,0 +1,108 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+*.pyc
+
+# Environment Variables - NEVER COMMIT THESE!
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Gmail API credentials - SENSITIVE!
+backend/credentials.json
+backend/token.json
+credentials.json
+token.json
+
+# API Keys and Secrets - NEVER COMMIT!
+secrets/
+*.key
+*.pem
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Uploads and data
+uploads/*
+!uploads/.gitkeep
+demo_data/*
+!demo_data/.gitkeep
+*.pdf
+*.png
+*.jpg
+*.jpeg
+!demo_data/*.pdf
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Node
+node_modules/
+.npm
+.yarn/
+yarn-error.log
+.pnp/
+.pnp.js
+
+# Frontend build
+frontend/dist/
+frontend/build/
+.cache/
+.vite/
+frontend/.vite/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+coverage/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+mongodb_data/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Claude/AI assistant files
+.claude/
+CLAUDE.md
+
+# macOS
+.AppleDouble
+.LSOverride
+._*
+
+# Backup files
+*.bak
+*.backup
+*~

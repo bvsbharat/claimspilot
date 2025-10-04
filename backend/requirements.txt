@@ -1,0 +1,41 @@
+pinecone-client
+
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-dotenv==1.0.0
+pydantic==2.10.6
+python-multipart==0.0.6
+
+# LandingAI for document extraction
+landingai-ade==0.17.1
+
+# Pathway for real-time streaming
+pathway==0.8.0
+nest-asyncio==1.5.8
+
+# Vector database
+pinecone-client==5.0.1
+
+# Document database
+motor==3.3.2
+pymongo==4.6.1
+
+# LLM
+openai==1.58.1
+langchain-community==0.3.13
+langchain-core==0.3.28
+
+# Utilities
+aiofiles==23.2.1
+
+# Gmail Integration
+google-auth==2.35.0
+google-auth-oauthlib==1.2.1
+google-auth-httplib2==0.2.0
+google-api-python-client==2.149.0
+
+# PDF Generation
+reportlab==4.2.5
+weasyprint==62.3
+beautifulsoup4==4.12.3
+Pillow==10.4.0
