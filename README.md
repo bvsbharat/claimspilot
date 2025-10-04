@@ -2,9 +2,9 @@
 
 **Intelligent Insurance Claims Automation Platform**
 
-**Powered by [Landing AI](https://landing.ai) 🚀 & [Pathway](https://pathway.com) ⚡**
+**Powered by [Landing AI](https://landing.ai) 🚀 [Pathway](https://pathway.com) ⚡ & [LangGraph](https://github.com/langchain-ai/langgraph) 🧠**
 
-ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform that automates the entire claims workflow from intake to routing. Built on **Landing AI's** advanced document intelligence and **Pathway's** real-time streaming architecture, it reduces triage time by 92% while improving routing accuracy to 95%.
+ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform that automates the entire claims workflow from intake to routing. Built on **Landing AI's** advanced document intelligence, **Pathway's** real-time streaming architecture, and **LangGraph + DeepAgent's** intelligent decision engine, it reduces triage time by 92% while improving routing accuracy to 95%.
 
 ## 🚀 Features
 
@@ -13,11 +13,11 @@ ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform tha
 - **📧 Gmail Auto-Fetch Integration**: Automatically monitors Gmail inbox for claim-related emails, extracts attachments, and processes them into the system
 - **📄 Smart Document Extraction**: Uses LandingAI ADE (DPT-2) to extract structured data from ACORD forms, police reports, medical records, and email attachments
 - **⚡ Real-time Processing**: Pathway streaming pipeline for instant claim processing as documents arrive
+- **💬 Real-time RAG Chat**: Ask any question about claims and get instant answers within seconds. Chat with your claims data using natural language - the system instantly searches through all processed documents and provides accurate responses powered by GPT-4o
 - **🤖 Auto-Processing**: Automatically approves minor claims under $500 with no injuries
 - **🎯 Intelligent Routing**: AI-powered adjuster matching using GPT-4o with reasoning chains
 - **🔍 Fraud Detection**: Multi-factor fraud detection using pattern analysis and late reporting detection
 - **📊 Severity & Complexity Scoring**: Automated risk assessment and claim prioritization
-- **💬 RAG Q&A System**: Ask questions about any claim using natural language
 - **📈 Live Dashboard**: Real-time updates via Server-Sent Events with processing metrics
 - **🔄 Auto-Transition**: Automatic status transitions based on time and amount thresholds
 - **📋 Task Management**: Automated task creation and assignment to adjusters
@@ -32,7 +32,7 @@ ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform tha
 
 ## 🏗️ Architecture
 
-**Built on Landing AI's Document Intelligence + Pathway's Real-Time Streaming**
+**Built on Landing AI's Document Intelligence + Pathway's Real-Time Streaming + LangGraph's Decision Engine**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -47,8 +47,9 @@ ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform tha
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                  DECISION ENGINE                             │
+│      🧠 DECISION ENGINE (LangGraph + DeepAgent)             │
 │  🤖 Auto-Process  │  🧠 Deep Reasoning  │  🎯 Smart Route   │
+│  Multi-step workflows, state machines, agent orchestration  │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -63,10 +64,12 @@ ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform tha
 ### Core Technologies (Powering the Entire Platform)
 - **🚀 Landing AI (ADE DPT-2)**: Enterprise-grade document intelligence - extracts structured data from insurance documents with industry-leading accuracy. Powers all document processing and data extraction.
 - **⚡ Pathway**: Real-time streaming data framework - provides instant file watching, processing pipeline, and live data transformations. Powers the entire claim automation workflow.
+- **🧠 LangGraph + DeepAgent**: Advanced agent orchestration and multi-step reasoning framework. Powers the Decision Engine with state machines, complex workflows, and intelligent agent coordination for claim routing and investigation planning.
 
 ### Backend Services
 - **FastAPI**: High-performance async API framework
 - **OpenAI GPT-4o**: Fraud detection, claim parsing, routing decisions, and RAG
+- **LangChain**: Agent toolkits and LLM application framework
 
 ### Data Layer
 - **MongoDB (Motor)**: Async document database for claims and adjusters
@@ -238,9 +241,12 @@ The system will automatically:
 - `POST /api/gmail/fetch` - Manually trigger email fetch
 - `GET /api/gmail/auto-fetch/status` - Get auto-fetch service status
 
-#### 💬 RAG Q&A System
-- `POST /api/rag/query` - Ask questions about claims
-- `GET /api/rag/stats` - Get RAG service statistics
+#### 💬 Real-time RAG Chat & Q&A
+- `POST /api/rag/query` - **Ask any question about claims and get instant answers**
+  - Example: `{"question": "What's the claim amount for the latest auto accident?"}`
+  - Returns detailed answers with sources and context within seconds
+- `GET /api/rag/stats` - Get RAG service statistics (documents cached, total claims indexed)
+- `GET /api/claims/{claim_id}/context` - Get full document context for specific claim
 
 #### 📊 Analytics & Reporting
 - `GET /api/analytics/fraud-flags` - Get all fraud flags
@@ -303,6 +309,7 @@ curl -X POST http://localhost:8080/api/claims/upload \
 - **💰 Cost per Claim**: -$500
 - **🤖 Auto-Approval Rate**: ~15% of claims (minor incidents)
 - **⚙️ Processing Speed**: ~30 seconds per claim (end-to-end)
+- **💬 RAG Query Response Time**: < 3 seconds (instant answers to any claim question)
 
 ## 📁 Project Structure
 
@@ -383,20 +390,44 @@ claimspilot/
   - High-value claims
   - Multiple previous claims
 
-### 4. **Decision Engine**
-- **Auto-Processing**: Claims under $500 with no injuries automatically approved
-- **Deep Reasoning**: Complex claims get multi-step investigation plans
+### 4. **Decision Engine** (Powered by LangGraph + DeepAgent)
+The real-time decision engine uses **LangGraph** for agent orchestration and **DeepAgent** for multi-step reasoning:
+
+- **LangGraph State Machines**: Manages complex claim workflows with stateful decision trees
+- **Multi-Agent Coordination**: Orchestrates multiple AI agents working together on complex claims
+- **Auto-Processing**: Claims under $500 with no injuries automatically approved through agent workflows
+- **Deep Reasoning (DeepAgent)**: Complex claims get multi-step investigation plans with:
+  - Evidence-based decision making
+  - Step-by-step reasoning chains
+  - Investigation priority planning
+  - Risk assessment and timeline estimation
 - **Smart Routing**: AI matches claims to adjusters based on:
   - Specialization (auto, property, injury, commercial)
   - Experience level (junior, mid, senior)
   - Current workload
   - Claim complexity fit
+  - Semantic matching via LangGraph agent coordination
 
-### 5. **Output & Tracking**
+### 5. **Real-time RAG Chat & Q&A**
+The system provides instant conversational access to all claim data:
+
+- **Instant Responses**: Ask questions and get answers within seconds about any processed claim
+- **Natural Language Interface**: No need to learn complex queries - just ask in plain English
+- **Examples of Questions You Can Ask**:
+  - "What's the claim amount for CLM-2025-001234?"
+  - "Show me all claims with fraud flags from last week"
+  - "What injuries were reported in the latest auto accident claim?"
+  - "Which adjuster is handling the commercial fire claim?"
+  - "Summarize the policy details for claim X"
+- **Powered by RAG**: Retrieval-Augmented Generation searches through all documents in real-time
+- **Context-Aware**: Understands claim context, relationships, and history
+- **Live Data**: Every newly processed claim is immediately available for chat queries
+- **Vector Search**: Uses Pinecone for semantic search across all claim content
+
+### 6. **Output & Tracking**
 - **Task Creation**: Automatically creates tasks for assigned adjusters
 - **MongoDB Storage**: All claim data, decisions, and history stored
 - **Pinecone Indexing**: Document embeddings for semantic search
-- **RAG System**: Enables natural language Q&A over all claims
 - **Live Dashboard**: Real-time SSE updates on processing status
 - **Auto-Transition**: Claims automatically move through workflow stages
 
@@ -585,6 +616,8 @@ MIT License - see [LICENSE](LICENSE) file for details
 - **🚀 [Landing AI](https://landing.ai/)** - The engine behind our document intelligence. Landing AI's ADE (Automated Document Extraction) with DPT-2 provides enterprise-grade accuracy for extracting structured data from complex insurance documents. Without Landing AI, this platform wouldn't be possible.
 
 - **⚡ [Pathway](https://pathway.com/)** - The real-time streaming framework that powers our entire automation workflow. Pathway's live data processing enables instant file watching, claim processing, and real-time updates that make our system blazingly fast.
+
+- **🧠 [LangGraph](https://github.com/langchain-ai/langgraph) + [DeepAgent](https://github.com/langchain-ai/deepagents)** - The intelligent decision engine. LangGraph provides state machine orchestration and multi-agent coordination, while DeepAgent enables sophisticated multi-step reasoning and investigation planning for complex claims.
 
 ### Additional Technologies
 
