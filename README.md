@@ -34,29 +34,43 @@ ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform tha
 
 **Built on Landing AI's Document Intelligence + Pathway's Real-Time Streaming + LangGraph's Decision Engine**
 
+![ClaimsPilot.ai Architecture](assets/architecture-diagram.png)
+
+### System Architecture Overview
+
+The platform follows a modern, microservices-inspired architecture with distinct layers:
+
+#### **Client Layer**
+- **Web Browser & Mobile Browser**: Responsive interface accessible from any device
+- **Vite.js Frontend**: Lightning-fast React app with TailwindCSS and Redux for state management
+- **Live Dashboard**: Real-time claim monitoring with Server-Sent Events
+
+#### **API Layer** (FastAPI Backend)
+- RESTful endpoints: Health checks, Upload, List, Query, Analytics, Events
+- Async request handling for maximum throughput
+- Server-Sent Events for live updates
+
+#### **Core Services**
+- **Event Queue**: Real-time event broadcasting to connected clients
+- **Pathway RAG Pipeline**: Streaming document processing with Landing AI integration
+- **Financial Deep Agent (LangGraph)**: Multi-step reasoning and decision orchestration
+
+#### **Data Layer**
+- **MongoDB**: Primary document storage for claims, adjusters, and tasks
+- **Pinecone Vector DB**: Semantic search and embeddings storage
+- **File Storage**: Original document preservation
+
+#### **External Services**
+- **Landing AI OCR/Parsing**: Industry-leading document extraction (DPT-2)
+- **OpenAI GPT-4o**: Fraud detection, reasoning, and RAG embeddings
+
+### Data Flow
+
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    INPUT SOURCES                             │
-│  📧 Gmail (Auto-Fetch)  │  📤 File Upload  │  📨 Email PDF  │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│         ⚡ PATHWAY REAL-TIME PIPELINE (Pathway.com)          │
-│  👀 File Watcher → 🚀 Landing AI Extract → 📊 Score →       │
-│  🔍 Detect → 🎯 Route (All in Real-Time Streaming)          │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│      🧠 DECISION ENGINE (LangGraph + DeepAgent)             │
-│  🤖 Auto-Process  │  🧠 Deep Reasoning  │  🎯 Smart Route   │
-│  Multi-step workflows, state machines, agent orchestration  │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    OUTPUT & STORAGE                          │
-│  👤 Adjuster Assignment  │  📋 Task Creation  │  💾 MongoDB  │
-│  🔍 Pinecone Vector DB  │  📊 Live Dashboard Updates        │
-└─────────────────────────────────────────────────────────────┘
+📄 Document Upload → ⚡ Pathway Watch → 🚀 Landing AI Extract → 
+📊 Score & Analyze → 🧠 LangGraph Decision Engine → 
+🎯 Route to Adjuster → 💾 Store in MongoDB + Pinecone → 
+📡 Live Dashboard Update
 ```
 
 ## 🛠️ Tech Stack

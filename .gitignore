@@ -54,6 +54,12 @@ demo_data/*
 *.jpeg
 !demo_data/*.pdf
 
+# Allow assets folder for documentation images
+!assets/
+!assets/*.png
+!assets/*.jpg
+!assets/*.jpeg
+
 # Logs
 *.log
 logs/
