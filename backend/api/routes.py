@@ -82,6 +82,7 @@ async def health_check():
             "status": "healthy",
             "mongodb": "connected",
             "claims_processed": claims_count,
+            "processing_mode": "direct_upload",
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
@@ -129,11 +130,12 @@ async def stream_events(request: Request):
 
 
 @router.post("/api/claims/upload", response_model=ClaimUploadResponse)
-async def upload_claim(file: UploadFile = File(...)):
-    """Upload claim document - Pathway processes automatically"""
+async def upload_claim(file: UploadFile = File(...), background_tasks=None):
+    """Upload claim document and process immediately"""
     try:
         import unicodedata
         import re
+        from services.claim_processor import process_claim_file
 
         # Sanitize filename
         normalized = unicodedata.normalize('NFKD', file.filename)
@@ -150,14 +152,19 @@ async def upload_claim(file: UploadFile = File(...)):
         with open(file_path, "wb") as f:
             f.write(content)
 
-        claim_id = Path(safe_filename).stem
+        logger.info(f"📤 Claim uploaded: {safe_filename}")
 
-        logger.info(f"📤 Claim uploaded: {claim_id}")
+        # Process claim immediately (in background to not block response)
+        import asyncio
+        asyncio.create_task(process_claim_file(str(file_path)))
+
+        # Generate temporary claim ID for response
+        claim_id = Path(safe_filename).stem
 
         return ClaimUploadResponse(
             claim_id=claim_id,
-            status="uploaded",
-            message="Claim uploaded - processing automatically"
+            status="processing",
+            message="Claim uploaded - processing started"
         )
 
     except Exception as e:
@@ -339,6 +346,44 @@ async def get_metrics():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/api/processing/status")
+async def get_processing_status():
+    """Get claim processing system status"""
+    try:
+        import os
+
+        uploads_dir = str(UPLOAD_DIR)
+        abs_uploads_dir = os.path.abspath(uploads_dir)
+
+        # Count files in uploads directory
+        files_in_dir = []
+        if os.path.exists(abs_uploads_dir):
+            files_in_dir = [f for f in os.listdir(abs_uploads_dir)
+                           if not f.startswith('.') and os.path.isfile(os.path.join(abs_uploads_dir, f))]
+
+        mongodb = await get_mongodb_service()
+        all_claims = await mongodb.get_all_claims()
+
+        return {
+            "processing_mode": "direct_upload",
+            "pathway_disabled": True,
+            "uploads_dir": uploads_dir,
+            "abs_uploads_dir": abs_uploads_dir,
+            "dir_exists": os.path.exists(abs_uploads_dir),
+            "files_in_uploads": len(files_in_dir),
+            "claims_in_db": len(all_claims),
+            "file_list": files_in_dir[:10],  # Show first 10 files
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Get processing status failed: {e}", exc_info=True)
+        return {
+            "processing_mode": "direct_upload",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+
 class ClaimStatusUpdate(BaseModel):
     status: str
 
@@ -464,15 +509,48 @@ class ChatQuery(BaseModel):
 
 @router.post("/api/chat/query")
 async def query_rag(chat_query: ChatQuery):
-    """Query the RAG system with a question"""
+    """Query the RAG system with a question (uses Pathway RAG if available)"""
     try:
+        # Try Pathway RAG server first (vector-based)
+        from services.pathway_rag_server import get_pathway_rag_server, PATHWAY_LLM_AVAILABLE
+
+        if PATHWAY_LLM_AVAILABLE:
+            rag_server = get_pathway_rag_server()
+            if rag_server and rag_server.running:
+                try:
+                    import requests
+
+                    # Query Pathway RAG server
+                    response = requests.post(
+                        "http://127.0.0.1:8765/v2/answer",
+                        json={"prompt": chat_query.query},
+                        timeout=30
+                    )
+
+                    if response.status_code == 200:
+                        pathway_result = response.json()
+
+                        # Format response to match our API
+                        return {
+                            "answer": pathway_result.get("response", pathway_result.get("answer", "")),
+                            "sources": pathway_result.get("sources", []),
+                            "context": pathway_result.get("context", []),
+                            "model": "gpt-4o (via Pathway RAG)",
+                            "engine": "pathway_vector_rag"
+                        }
+                except Exception as e:
+                    logger.warning(f"Pathway RAG query failed, falling back to basic RAG: {e}")
+
+        # Fallback to basic RAG service
         rag_service = get_rag_service()
         result = await rag_service.query(
             question=chat_query.query,
             claim_id=chat_query.claim_id
         )
+        result["engine"] = "fallback_text_rag"
 
         return result
+
     except Exception as e:
         logger.error(f"RAG query failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))

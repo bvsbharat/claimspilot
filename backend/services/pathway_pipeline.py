@@ -60,6 +60,9 @@ class PathwayPipeline:
         asyncio.set_event_loop(loop)
 
         try:
+            import nest_asyncio
+            nest_asyncio.apply()  # Allow nested event loops
+
             from .event_queue import get_event_queue
             from .sync_mongodb import get_sync_mongodb
             from .pinecone_service import get_pinecone_service
@@ -72,50 +75,95 @@ class PathwayPipeline:
 
             logger.info("🔧 Initializing Pathway components...")
 
-            # Create file watcher
+            # Ensure data directory exists
+            import os
+            os.makedirs(self.data_dir, exist_ok=True)
+            logger.info(f"📁 Data directory confirmed: {self.data_dir}")
+
+            # Create file watcher with explicit absolute path
+            abs_data_dir = os.path.abspath(self.data_dir)
+            logger.info(f"👀 Pathway will watch directory: {abs_data_dir}")
+
+            # Simpler approach: Use plaintext format which gives us one row per file
+            # The 'data' column contains file content, and we track files via MongoDB
             files = pw.io.fs.read(
-                path=self.data_dir,
-                format="binary",
-                mode="streaming",
-                with_metadata=True,
+                path=abs_data_dir,
+                format="plaintext",
+                mode="streaming"
             )
 
-            logger.info(f"👀 Pathway watching directory: {self.data_dir}")
+            logger.info(f"✅ Pathway file watcher created successfully")
+            logger.info(f"📋 Watching directory for new files (plaintext mode)")
+
+            # Track processed files to avoid reprocessing
+            processed_files_cache = set()
 
             # Process each file
-            def process_file(data, metadata):
-                """Process a single claim file"""
+            def process_file(data_content):
+                """Process a single claim file
+
+                Args:
+                    data_content: File content from Pathway (plaintext/binary data)
+                """
                 try:
                     import time
                     start_time = time.time()
 
-                    # Extract file path
-                    file_path_obj = metadata["path"]
-                    file_path = file_path_obj.value if hasattr(file_path_obj, 'value') else str(file_path_obj)
-                    file_path = file_path.strip('"').strip("'")
-                    source_filename = Path(file_path).name
+                    # Since Pathway 0.2.0 plaintext mode doesn't give us the filename directly,
+                    # we need to scan the directory and find unprocessed files
+                    import os
+                    from pathlib import Path
+
+                    # Get all files in directory
+                    all_files = []
+                    for f in os.listdir(abs_data_dir):
+                        full_path = os.path.join(abs_data_dir, f)
+                        if os.path.isfile(full_path) and not f.startswith('.'):
+                            # Skip if already in cache
+                            if full_path not in processed_files_cache:
+                                all_files.append((full_path, os.path.getmtime(full_path)))
+
+                    if not all_files:
+                        # No new files to process
+                        return {"status": "skipped", "reason": "no_new_files"}
+
+                    # Sort by modification time, process oldest unprocessed first
+                    all_files.sort(key=lambda x: x[1])
+                    file_path = all_files[0][0]  # Get oldest unprocessed file
+
+                    # Add to cache immediately to avoid double processing
+                    processed_files_cache.add(file_path)
+
+                    # Get full filename for logging and deduplication
+                    full_filename = Path(file_path).name
 
                     # Skip system files
                     IGNORED_FILES = {'.DS_Store', '.gitkeep', 'Thumbs.db', '.gitignore', '.keep'}
-                    if source_filename in IGNORED_FILES or source_filename.startswith('.'):
-                        logger.info(f"⏭️  Skipping system file: {source_filename}")
+                    if full_filename in IGNORED_FILES or full_filename.startswith('.'):
+                        logger.info(f"⏭️  Skipping system file: {full_filename}")
                         return {"status": "skipped", "reason": "system_file"}
 
-                    source_filename = Path(file_path).stem
+                    logger.info(f"🔔 Pathway detected new file: {full_filename}")
+                    logger.info(f"📂 Full path: {file_path}")
+
+                    # Use filename WITHOUT extension for deduplication (but keep full_filename for reference)
+                    source_filename_stem = Path(file_path).stem
 
                     # Check if claim already exists by filename BEFORE creating temp claim
                     mongodb = get_sync_mongodb()
-                    existing_claim = mongodb.get_claim_by_filename(source_filename)
+                    existing_claim = mongodb.get_claim_by_filename(source_filename_stem)
 
                     if existing_claim:
                         existing_claim_id = existing_claim.get("claim_id")
                         current_status = existing_claim.get("status")
                         # Don't reprocess claims that are already assigned or beyond
                         if current_status in ["assigned", "in_progress", "review", "completed", "approved", "closed", "auto_approved", "auto_routed"]:
-                            logger.info(f"⏭️  Skipping {source_filename} - already exists as {existing_claim_id} with status: {current_status}")
+                            logger.info(f"⏭️  Skipping {full_filename} - already exists as {existing_claim_id} with status: {current_status}")
                             return {"status": "skipped", "reason": f"already_in_status_{current_status}"}
+                        else:
+                            logger.info(f"🔄 Re-processing {full_filename} - current status: {current_status}")
 
-                    logger.info(f"📄 Processing new file: {source_filename}")
+                    logger.info(f"📄 Processing new file: {full_filename} (stem: {source_filename_stem})")
 
                     # Generate unique claim ID immediately (no temp ID)
                     from datetime import datetime
@@ -141,20 +189,20 @@ class PathwayPipeline:
                         pass
 
                     # Detect source (upload vs gmail)
-                    is_gmail_source = "_gmail_" in source_filename.lower()
+                    is_gmail_source = "_gmail_" in full_filename.lower()
                     source = "gmail" if is_gmail_source else "upload"
                     source_metadata = {}
                     if is_gmail_source:
                         # Extract email info from filename if possible
                         source_metadata = {
                             "source_type": "gmail_auto_fetch",
-                            "filename": source_filename
+                            "filename": full_filename
                         }
 
                     # Save initial claim to MongoDB with final claim ID
                     initial_claim = {
                         "claim_id": claim_id,
-                        "source_filename": source_filename,
+                        "source_filename": source_filename_stem,  # Use stem for consistency
                         "source": source,
                         "source_metadata": source_metadata,
                         "status": "extracting",
@@ -163,6 +211,7 @@ class PathwayPipeline:
                         "created_at": datetime.now()
                     }
                     mongodb.save_claim(initial_claim)
+                    logger.info(f"💾 Saved initial claim to MongoDB: {claim_id}")
 
                     # Publish extraction start event
                     try:
@@ -234,12 +283,13 @@ class PathwayPipeline:
                     # Update claim with extracted data and status
                     mongodb.save_claim({
                         "claim_id": claim_id,
-                        "source_filename": source_filename,
+                        "source_filename": source_filename_stem,
                         "status": "scoring",
                         "extracted_data": claim_data,
                         "extracted_text": document_text,  # Store LandingAI extracted text
                         "file_paths": [file_path]
                     })
+                    logger.info(f"💾 Updated claim with extracted data")
 
                     # Publish scoring event
                     try:
@@ -281,7 +331,7 @@ class PathwayPipeline:
                     # Update claim with scores and status
                     mongodb.save_claim({
                         "claim_id": claim_id,
-                        "source_filename": source_filename,
+                        "source_filename": source_filename_stem,
                         "status": "routing",
                         "extracted_data": claim_data,
                         "severity_score": scores["severity_score"],
@@ -289,6 +339,7 @@ class PathwayPipeline:
                         "fraud_flags": fraud_flags,
                         "file_paths": [file_path]
                     })
+                    logger.info(f"💾 Updated claim with scores")
 
                     # Publish routing event
                     try:
@@ -360,19 +411,19 @@ class PathwayPipeline:
                     processing_time = time.time() - start_time
                     final_status = "in_progress" if routing_decision.get("adjuster_id") else "routing"
 
-                    # Detect source (upload vs gmail)
-                    is_gmail_source = "_gmail_" in source_filename.lower()
+                    # Detect source (upload vs gmail) - check full filename
+                    is_gmail_source = "_gmail_" in full_filename.lower()
                     source = "gmail" if is_gmail_source else "upload"
                     source_metadata = {}
                     if is_gmail_source:
                         source_metadata = {
                             "source_type": "gmail_auto_fetch",
-                            "filename": source_filename
+                            "filename": full_filename
                         }
 
                     full_claim = {
                         "claim_id": claim_id,
-                        "source_filename": source_filename,
+                        "source_filename": source_filename_stem,
                         "source": source,
                         "source_metadata": source_metadata,
                         "document_types": [extracted.get("document_type", "unknown")],
@@ -458,24 +509,37 @@ class PathwayPipeline:
                     return {"status": "error", "error": str(e)}
 
             # Apply processing to each file
+            # In Pathway 0.2.0, pw.this.data contains the file content
             processed = files.select(
-                result=pw.apply(process_file, pw.this.data, pw.this._metadata)
+                result=pw.apply(process_file, pw.this.data)
             )
 
             # Subscribe to results
             def on_result(key, row, time, is_addition):
                 if is_addition:
                     result = row.get("result", {}) if isinstance(row, dict) else row.result
-                    logger.info(f"Pathway result: {result}")
+                    logger.info(f"✅ Pathway processed file - result: {result}")
+                else:
+                    logger.info(f"🗑️  Pathway removed file - key: {key}")
 
             pw.io.subscribe(processed, on_result)
 
-            # Run pipeline (blocking)
-            logger.info("▶️  Starting Pathway run...")
-            pw.run()
+            # Run pipeline (blocking) - this call will run forever
+            logger.info("▶️  Starting Pathway run (will run continuously)...")
+            logger.info(f"🎯 Watching for new files in: {abs_data_dir}")
+
+            try:
+                # Run with minimal monitoring to reduce overhead
+                pw.run(monitoring_level=pw.MonitoringLevel.NONE)
+            except KeyboardInterrupt:
+                logger.info("⏹️  Pathway pipeline stopped by user")
+            except Exception as run_error:
+                logger.error(f"Pathway run error: {run_error}", exc_info=True)
+                raise
 
         except Exception as e:
             logger.error(f"Pathway pipeline error: {e}", exc_info=True)
+            raise
 
     async def _parse_claim_data(self, document_text: str, extracted: Dict) -> Dict:
         """Parse extracted text into structured claim data (simplified using LLM)"""

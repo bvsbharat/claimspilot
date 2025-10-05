@@ -9,9 +9,11 @@ python-multipart==0.0.6
 # LandingAI for document extraction
 landingai-ade==0.17.1
 
-# Pathway for real-time streaming
-pathway==0.2.0
+# Pathway for real-time streaming and RAG
+pathway[xpack-llm]==0.2.0
 nest-asyncio==1.5.8
+unstructured>=0.10.0  # Document parsing for Pathway RAG
+python-magic-bin>=0.4.14; sys_platform == 'win32'  # For unstructured on Windows
 
 # Vector database
 pinecone-client==5.0.1
