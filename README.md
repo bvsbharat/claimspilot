@@ -6,6 +6,10 @@
 
 ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform that automates the entire claims workflow from intake to routing. Built on **Landing AI's** advanced document intelligence, **Pathway's** real-time streaming architecture, and **LangGraph + DeepAgent's** intelligent decision engine, it reduces triage time by 92% while improving routing accuracy to 95%.
 
+## 🎥 Video Demo
+
+Watch the full platform demonstration: [ClaimsPilot.ai Demo](https://youtu.be/dSaQVIqdbHw)
+
 ## The Problem: Automating Claims Processing
 
 Insurance companies are inundated with a high volume of claims in various formats, including first notice of loss, ACORD forms, police reports, and emails. The manual triage of these documents is a slow, error-prone process that leads to increased operational costs and delays in claim resolution. Key challenges include:
