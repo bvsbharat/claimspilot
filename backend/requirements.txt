@@ -10,7 +10,7 @@ python-multipart==0.0.6
 landingai-ade==0.17.1
 
 # Pathway for real-time streaming
-pathway==0.8.0
+pathway==0.2.0
 nest-asyncio==1.5.8
 
 # Vector database

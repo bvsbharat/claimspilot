@@ -1,0 +1,126 @@
+{
+  "components": [
+    {
+      "id": "parse_1",
+      "provider": "parse",
+      "config": {},
+      "ui": {
+        "position": {
+          "x": -420,
+          "y": 260
+        },
+        "measured": {
+          "width": 140,
+          "height": 123
+        },
+        "data": {
+          "class": "default",
+          "type": "default"
+        },
+        "formDataValid": true,
+        "edges": [
+          {
+            "selectable": true,
+            "deletable": true,
+            "id": "xy-edge__gmail_1source-tags-0-parse_1target-tags-0",
+            "source": "gmail_1",
+            "target": "parse_1",
+            "sourceHandle": "source-tags-0",
+            "targetHandle": "target-tags-0"
+          }
+        ]
+      },
+      "input": [
+        {
+          "lane": "tags",
+          "from": "gmail_1"
+        }
+      ]
+    },
+    {
+      "id": "gmail_1",
+      "provider": "gmail",
+      "config": {
+        "actions": {},
+        "exclude": [],
+        "include": [
+          {}
+        ],
+        "mode": "Source",
+        "parameters": {
+          "authType": "service"
+        },
+        "sync": true,
+        "type": "gmail"
+      },
+      "ui": {
+        "position": {
+          "x": -620,
+          "y": 280
+        },
+        "measured": {
+          "width": 140,
+          "height": 61
+        },
+        "data": {
+          "class": "source",
+          "type": "default"
+        },
+        "formDataValid": false
+      }
+    },
+    {
+      "id": "response_1",
+      "provider": "response",
+      "config": {
+        "lanes": []
+      },
+      "ui": {
+        "position": {
+          "x": -180,
+          "y": 220
+        },
+        "measured": {
+          "width": 140,
+          "height": 264
+        },
+        "data": {
+          "class": "infrastructure",
+          "type": "default"
+        },
+        "formDataValid": false,
+        "edges": [
+          {
+            "selectable": true,
+            "deletable": true,
+            "id": "xy-edge__parse_1source-image-0-response_1target-image-3",
+            "source": "parse_1",
+            "target": "response_1",
+            "sourceHandle": "source-image-0",
+            "targetHandle": "target-image-3"
+          },
+          {
+            "selectable": true,
+            "deletable": true,
+            "id": "xy-edge__parse_1source-text-0-response_1target-text-6",
+            "source": "parse_1",
+            "target": "response_1",
+            "sourceHandle": "source-text-0",
+            "targetHandle": "target-text-6"
+          }
+        ]
+      },
+      "input": [
+        {
+          "lane": "image",
+          "from": "parse_1"
+        },
+        {
+          "lane": "text",
+          "from": "parse_1"
+        }
+      ]
+    }
+  ],
+  "id": "52a62c64-c306-4584-8b60-d68b4df351b4"
+}

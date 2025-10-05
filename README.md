@@ -6,6 +6,56 @@
 
 ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform that automates the entire claims workflow from intake to routing. Built on **Landing AI's** advanced document intelligence, **Pathway's** real-time streaming architecture, and **LangGraph + DeepAgent's** intelligent decision engine, it reduces triage time by 92% while improving routing accuracy to 95%.
 
+## The Problem: Automating Claims Processing
+
+Insurance companies are inundated with a high volume of claims in various formats, including first notice of loss, ACORD forms, police reports, and emails. The manual triage of these documents is a slow, error-prone process that leads to increased operational costs and delays in claim resolution. Key challenges include:
+
+-   **Manual Data Entry**: Support agents spend a significant amount of time manually transcribing data from unstructured documents into internal systems.
+-   **Inconsistent Routing**: Misrouting claims to the wrong adjusters or departments results in inefficiencies and rework.
+-   **Delayed Fraud Detection**: The inability to flag suspicious claims early in the process leads to financial losses.
+
+## The Solution: An AI-Powered Claims Agent
+
+ClaimsPilot.ai is an intelligent automation platform that addresses these challenges by providing an AI-powered agent to streamline the entire claims lifecycle. The agent is designed to:
+
+-   **Automate Document Intake**: Read and extract relevant information from a variety of claim documents.
+-   **Score and Prioritize**: Assess the severity and complexity of each claim to determine priority.
+-   **Intelligently Route**: Assign claims to the most appropriate adjuster based on their expertise, availability, and workload.
+-   **Detect Anomalies**: Identify potential fraud, litigation, and subrogation opportunities early in the process.
+
+## User Journey
+
+1.  **Claim Submission**: A claims representative receives a new claim via email or direct upload.
+2.  **Automated Triage**: The AI agent automatically extracts key information, scores the claim's complexity and severity, and flags it for potential fraud or other special handling.
+3.  **Intelligent Routing**: The claim is routed to the best-suited adjuster, or, for minor claims, it is processed automatically.
+4.  **Real-Time Monitoring**: The claims team can monitor the status of all claims in real-time through a live dashboard, with full visibility into the AI's decisions.
+
+## Explainability: How Decisions Are Made
+
+Explainability is a cornerstone of ClaimsPilot.ai. For every decision made by the AI agent, a clear, evidence-based rationale is provided. This includes:
+
+-   **Extraction with Evidence**: All extracted data is linked back to its source in the original document.
+-   **Clear Triage Rationale**: The system provides a detailed explanation of how it scored a claim's severity and complexity.
+-   **Transparent Routing**: The logic behind each routing decision is made available, ensuring that users can understand and trust the system's recommendations.
+
+## Table of Contents
+
+- [Features](#-features)
+- [Architecture](#️-architecture)
+- [Tech Stack](#️-tech-stack)
+- [Quick Start](#-quick-start)
+- [Usage](#-usage)
+- [API Endpoints](#-api-endpoints)
+- [Demo Flow](#-demo-flow)
+- [Key Metrics](#-key-metrics)
+- [Project Structure](#-project-structure)
+- [How It Works](#-how-it-works)
+- [Configuration](#️-configuration)
+- [Development](#-development)
+- [Troubleshooting](#-troubleshooting)
+- [Contributing](#-contributing)
+- [License](#-license)
+
 ## 🚀 Features
 
 ### Core Capabilities
@@ -13,7 +63,7 @@ ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform tha
 - **📧 Gmail Auto-Fetch Integration**: Automatically monitors Gmail inbox for claim-related emails, extracts attachments, and processes them into the system
 - **📄 Smart Document Extraction**: Uses LandingAI ADE (DPT-2) to extract structured data from ACORD forms, police reports, medical records, and email attachments
 - **⚡ Real-time Processing**: Pathway streaming pipeline for instant claim processing as documents arrive
-- **💬 Real-time RAG Chat**: Ask any question about claims and get instant answers within seconds. Chat with your claims data using natural language - the system instantly searches through all processed documents and provides accurate responses powered by GPT-4o
+- **💬 Real-time RAG System**: Powered by Pathway for real-time Retrieval-Augmented Generation. Ask any question about claims and get instant answers within seconds using natural language queries over all processed documents
 - **🤖 Auto-Processing**: Automatically approves minor claims under $500 with no injuries
 - **🎯 Intelligent Routing**: AI-powered adjuster matching using GPT-4o with reasoning chains
 - **🔍 Fraud Detection**: Multi-factor fraud detection using pattern analysis and late reporting detection
@@ -27,7 +77,6 @@ ClaimsPilot.ai is an enterprise-grade, AI-powered claims processing platform tha
 - **Deep Agent Reasoning**: Multi-step investigation planning with evidence-based decision making
 - **Document Context Management**: Maintains full document history and context for all claims
 - **PDF Report Generation**: Automatically generates claim summary PDFs from emails
-- **Vector Search**: Pinecone-powered semantic search across all claim documents
 - **Adjuster Workload Balancing**: Real-time workload tracking and intelligent distribution
 
 ## 🏗️ Architecture
@@ -57,7 +106,7 @@ The platform follows a modern, microservices-inspired architecture with distinct
 
 #### **Data Layer**
 - **MongoDB**: Primary document storage for claims, adjusters, and tasks
-- **Pinecone Vector DB**: Semantic search and embeddings storage
+- **Pathway RAG Cache**: Real-time document indexing and semantic search
 - **File Storage**: Original document preservation
 
 #### **External Services**
@@ -69,7 +118,7 @@ The platform follows a modern, microservices-inspired architecture with distinct
 ```
 📄 Document Upload → ⚡ Pathway Watch → 🚀 Landing AI Extract → 
 📊 Score & Analyze → 🧠 LangGraph Decision Engine → 
-🎯 Route to Adjuster → 💾 Store in MongoDB + Pinecone → 
+🎯 Route to Adjuster → 💾 Store in MongoDB + Pathway RAG → 
 📡 Live Dashboard Update
 ```
 
@@ -87,8 +136,7 @@ The platform follows a modern, microservices-inspired architecture with distinct
 
 ### Data Layer
 - **MongoDB (Motor)**: Async document database for claims and adjusters
-- **Pinecone**: Vector database for semantic search and RAG
-- **RAG Service**: Real-time question-answering over claim documents
+- **Pathway RAG Pipeline**: Real-time document indexing and semantic search for instant question-answering over claim documents
 
 ### Integrations
 - **Gmail API**: Automatic email monitoring and attachment extraction via LangChain GmailToolkit
@@ -99,123 +147,77 @@ The platform follows a modern, microservices-inspired architecture with distinct
 - **Vite + React + TypeScript**: Modern, fast development experience
 - **TailwindCSS**: Utility-first styling
 - **Server-Sent Events**: Real-time dashboard updates
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Python 3.9+** and **Node.js 18+**
-- **MongoDB** (local or cloud instance)
-- **Required API Keys**:
-  - [LandingAI API Key](https://landing.ai/) - For document extraction
-  - [OpenAI API Key](https://platform.openai.com/) - For GPT-4o processing
-  - [Pinecone API Key](https://www.pinecone.io/) - For vector search
-- **Gmail API Credentials** (Optional, for email integration):
-  - Google Cloud Console credentials.json
-  - OAuth 2.0 token (generated on first run)
+Before you begin, ensure you have the following installed:
 
-### Setup
+- **Python**: Version 3.9 or higher
+- **Node.js**: Version 18 or higher
+- **MongoDB**: A running instance (local or cloud)
+- **Git**: For cloning the repository
 
-1. **Clone the repository**:
-```bash
-git clone https://github.com/bvsbharat/claimspilot.git
-cd claimspilot
-```
+### API Keys
 
-2. **Configure environment variables**:
-```bash
-cp .env.example .env
-# Edit .env with your API keys and configuration
-```
+You will need the following API keys to run the application:
 
-**Required environment variables:**
-```env
-# LandingAI Configuration
-VISION_AGENT_API_KEY=your_landingai_api_key_here
+- [LandingAI API Key](https://landing.ai/)
+- [OpenAI API Key](https://platform.openai.com/)
 
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key_here
+### Setup and Installation
 
-# Pinecone Configuration
-PINECONE_API_KEY=your_pinecone_api_key_here
-PINECONE_INDEX_NAME=claims-triage
+1.  **Clone the Repository**
 
-# MongoDB Configuration
-MONGODB_URI=mongodb://localhost:27017
-MONGODB_DATABASE=claims_triage
+    ```bash
+    git clone https://github.com/bvsbharat/claimspilot.git
+    cd claimspilot
+    ```
 
-# Gmail Auto-Fetch (Optional)
-GMAIL_AUTO_FETCH_ENABLED=true
-GMAIL_AUTO_FETCH_INTERVAL_MINUTES=5
-```
+2.  **Configure Environment Variables**
 
-3. **Install backend dependencies**:
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
+    Create a `.env` file from the example and add your API keys and configuration:
 
-4. **Install frontend dependencies**:
-```bash
-cd ../frontend
-npm install
-```
+    ```bash
+    cp .env.example .env
+    ```
 
-5. **Setup Gmail Integration (Optional)**:
+    Now, edit the `.env` file with your credentials.
 
-To enable automatic email processing:
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing
-3. Enable Gmail API
-4. Create OAuth 2.0 credentials (Desktop app)
-5. Download `credentials.json` and place in `backend/` directory
-6. On first run, you'll be prompted to authorize access (generates `token.json`)
+3.  **Set Up the Backend**
 
-### Run the Application
+    ```bash
+    cd backend
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    ```
 
-**Option 1: Using the start script (Recommended)**
-```bash
-./start.sh
-```
+4.  **Set Up the Frontend**
 
-**Option 2: Manual startup**
+    ```bash
+    cd ../frontend
+    npm install
+    ```
 
-1. **Start MongoDB** (if not already running):
-```bash
-mongod --dbpath /path/to/data
-```
+### Running the Application
 
-2. **Start backend**:
-```bash
-cd backend
-source venv/bin/activate
-python app.py
-```
-Backend runs on `http://localhost:8080`
+1.  **Start the Backend Server**
 
-3. **Start frontend** (in new terminal):
-```bash
-cd frontend
-npm run dev
-```
-Frontend runs on `http://localhost:3030`
+    ```bash
+    cd backend
+    source venv/bin/activate
+    uvicorn app:app --host 0.0.0.0 --port 8080 --reload
+    ```
 
-4. **Seed demo adjusters** (optional):
-```bash
-cd backend
-python scripts/seed_adjusters.py
-```
+2.  **Start the Frontend Development Server**
 
-### First Run
+    ```bash
+    cd frontend
+    npm run dev
+    ```
 
-The system will automatically:
-- ✅ Connect to MongoDB
-- ✅ Initialize Pinecone vector store
-- ✅ Start Pathway real-time pipeline
-- ✅ Start Gmail auto-fetch (if configured)
-- ✅ Begin monitoring `uploads/` directory
+Once both servers are running, you can access the application at `http://localhost:3030`.
 
 ## Usage
 
@@ -233,7 +235,7 @@ The system will automatically:
 4. Route to appropriate adjuster
 5. Send real-time updates to dashboard
 
-### API Endpoints
+## API Endpoints
 
 #### 📋 Claims Management
 - `POST /api/claims/upload` - Upload and process claim document
@@ -274,6 +276,10 @@ The system will automatically:
 
 #### 🔔 Real-time Events
 - `GET /api/events/stream` - Server-Sent Events stream for live updates
+
+## Testing with Dummy Data
+
+To help you get started, we have included a `dummy-claims` directory containing sample claim documents. You can use these files to test the application's upload and processing capabilities.
 
 ## Demo Flow
 
@@ -348,7 +354,6 @@ claimspilot/
 │   │   ├── task_manager.py           # Task creation & management
 │   │   ├── pdf_generator.py          # Email-to-PDF conversion
 │   │   ├── document_context.py       # Document history tracking
-│   │   ├── pinecone_service.py       # Vector database operations
 │   │   ├── mongodb_service.py        # MongoDB async operations
 │   │   ├── sync_mongodb.py           # MongoDB sync operations (for Pathway)
 │   │   └── event_queue.py            # Server-Sent Events
@@ -422,8 +427,8 @@ The real-time decision engine uses **LangGraph** for agent orchestration and **D
   - Claim complexity fit
   - Semantic matching via LangGraph agent coordination
 
-### 5. **Real-time RAG Chat & Q&A**
-The system provides instant conversational access to all claim data:
+### 5. **Real-time RAG System** (Powered by Pathway)
+The system provides instant conversational access to all claim data using Pathway's real-time RAG capabilities:
 
 - **Instant Responses**: Ask questions and get answers within seconds about any processed claim
 - **Natural Language Interface**: No need to learn complex queries - just ask in plain English
@@ -433,15 +438,15 @@ The system provides instant conversational access to all claim data:
   - "What injuries were reported in the latest auto accident claim?"
   - "Which adjuster is handling the commercial fire claim?"
   - "Summarize the policy details for claim X"
-- **Powered by RAG**: Retrieval-Augmented Generation searches through all documents in real-time
+- **Powered by Pathway RAG**: Real-time Retrieval-Augmented Generation with live document indexing
 - **Context-Aware**: Understands claim context, relationships, and history
-- **Live Data**: Every newly processed claim is immediately available for chat queries
-- **Vector Search**: Uses Pinecone for semantic search across all claim content
+- **Live Data**: Every newly processed claim is immediately available for queries with zero latency
+- **Streaming Search**: Pathway's streaming architecture ensures instant semantic search across all documents
 
 ### 6. **Output & Tracking**
 - **Task Creation**: Automatically creates tasks for assigned adjusters
 - **MongoDB Storage**: All claim data, decisions, and history stored
-- **Pinecone Indexing**: Document embeddings for semantic search
+- **Pathway RAG Indexing**: Real-time document indexing for instant semantic search
 - **Live Dashboard**: Real-time SSE updates on processing status
 - **Auto-Transition**: Claims automatically move through workflow stages
 
@@ -460,10 +465,6 @@ LANDINGAI_API_KEY=your_landingai_key_here
 
 # OpenAI - GPT-4o for reasoning
 OPENAI_API_KEY=your_openai_key_here
-
-# Pinecone - Vector Database
-PINECONE_API_KEY=your_pinecone_key_here
-PINECONE_INDEX_NAME=claims-triage
 
 # MongoDB - Document Database
 MONGODB_URI=mongodb://localhost:27017
@@ -511,115 +512,23 @@ eventSource.onmessage = (event) => {
 
 ## 🐛 Troubleshooting
 
-### Common Issues
-
-**❌ MongoDB connection failed**
-- Ensure MongoDB is running: `mongod --dbpath /path/to/data`
-- Check `MONGODB_URI` in `.env` matches your MongoDB configuration
-- Verify MongoDB is accessible on the specified port
-
-**❌ LandingAI extraction failed**
-- Verify `VISION_AGENT_API_KEY` is set correctly in `.env`
-- Check API key has sufficient credits at [landing.ai](https://landing.ai)
-- Ensure document format is supported (PDF, PNG, JPG)
-
-**❌ Pathway pipeline not starting**
-- Ensure Pathway is installed: `pip install pathway[all]`
-- Check `uploads/` directory exists and is writable
-- Review logs for specific error messages
-
-**❌ Gmail auto-fetch not working**
-- Verify `credentials.json` and `token.json` are in `backend/` directory
-- Check Gmail API is enabled in Google Cloud Console
-- Re-authorize by deleting `token.json` and restarting the app
-- Ensure `GMAIL_AUTO_FETCH_ENABLED=true` in `.env`
-
-**❌ Pinecone errors**
-- Verify `PINECONE_API_KEY` is correct
-- Ensure index name matches: `PINECONE_INDEX_NAME=claims-triage`
-- Check Pinecone dashboard for index status
-
-**❌ OpenAI rate limits**
-- Implement retry logic or reduce concurrent requests
-- Upgrade OpenAI API tier if needed
-- Monitor usage at [platform.openai.com](https://platform.openai.com)
-
-### Debug Mode
-
-Enable detailed logging:
-```python
-import logging
-logging.basicConfig(level=logging.DEBUG)
-```
-
-## 🔒 Security
-
-### API Key Management
-- ✅ **Never commit `.env` file** - It's in `.gitignore`
-- ✅ **Use environment variables** - All keys loaded from `.env`
-- ✅ **Gmail credentials protected** - `credentials.json` and `token.json` are gitignored
-- ✅ **No hardcoded secrets** - Verified across all source files
-
-### Best Practices
-- Rotate API keys regularly
-- Use OAuth 2.0 for Gmail (no password storage)
-- Run MongoDB with authentication in production
-- Use HTTPS in production environments
-- Implement rate limiting on API endpoints
-
-## 🚀 Deployment
-
-### Production Checklist
-
-1. **Environment Setup**
-   ```bash
-   # Set production environment variables
-   export NODE_ENV=production
-   export HOST=0.0.0.0
-   export PORT=8080
-   ```
-
-2. **Database Configuration**
-   - Use MongoDB Atlas or managed MongoDB instance
-   - Enable authentication and SSL/TLS
-   - Set up regular backups
-
-3. **API Keys**
-   - Use production API keys (not development keys)
-   - Store in secure secret management system
-   - Set appropriate rate limits
-
-4. **Monitoring**
-   - Set up logging aggregation
-   - Monitor API usage and costs
-   - Track system performance metrics
-   - Set up alerts for errors
-
-5. **Scaling**
-   - Use load balancer for multiple backend instances
-   - Implement Redis for session management
-   - Consider Kubernetes for orchestration
+-   **`ModuleNotFoundError`**: Ensure you have activated the Python virtual environment (`source backend/venv/bin/activate`) before running the backend.
+-   **Frontend issues**: If you encounter issues with the frontend, try deleting the `node_modules` directory and running `npm install` again.
+-   **API Key errors**: Double-check that your API keys in the `.env` file are correct and have the necessary permissions.
 
 ## 🤝 Contributing
 
-We welcome contributions! Please follow these guidelines:
+Contributions are welcome! If you'd like to contribute, please follow these steps:
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
-### Development Guidelines
-- Follow PEP 8 for Python code
-- Use TypeScript for frontend code
-- Add tests for new features
-- Update documentation as needed
-- Keep commits atomic and well-described
+1.  Fork the repository.
+2.  Create a new branch (`git checkout -b feature/your-feature-name`).
+3.  Make your changes and commit them (`git commit -m 'Add some feature'`).
+4.  Push to the branch (`git push origin feature/your-feature-name`).
+5.  Create a new Pull Request.
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
@@ -636,7 +545,6 @@ MIT License - see [LICENSE](LICENSE) file for details
 ### Additional Technologies
 
 - [OpenAI](https://openai.com/) - GPT-4o language models for reasoning and fraud detection
-- [Pinecone](https://www.pinecone.io/) - Vector database for semantic search
 - [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
 - [LangChain](https://www.langchain.com/) - LLM application framework
 - [MongoDB](https://www.mongodb.com/) - Document database

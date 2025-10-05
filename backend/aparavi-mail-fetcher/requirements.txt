@@ -1,0 +1,8 @@
+# Aparavi Gmail Fetcher Requirements
+# Dummy placeholder implementation
+
+Flask==3.0.0
+python-dotenv==1.0.0
+
+# For actual Aparavi integration (not installed in dummy version):
+# aparavi-dtc-sdk==1.0.0
